@@ -1,6 +1,19 @@
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
+  name: infrastructure
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  path: ./kubernetes/shared/repos
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
   name: cert-manager
   namespace: flux-system
 spec:
@@ -10,12 +23,9 @@ spec:
   sourceRef:
     kind: GitRepository
     name: flux-system
-  dependsOn: []
-  includes:
-    - namespace.yaml
-
+  dependsOn:
+    - name: infrastructure
 ---
-
 apiVersion: kustomize.toolkit.fluxcd.io/v1
 kind: Kustomization
 metadata:
@@ -29,4 +39,4 @@ spec:
     kind: GitRepository
     name: flux-system
   dependsOn:
-    - name: cert-manager
+    - name: cert-manager-namespace
