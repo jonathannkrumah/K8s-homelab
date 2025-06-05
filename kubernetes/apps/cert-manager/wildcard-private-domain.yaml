@@ -1,0 +1,50 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: wildcard-private-domain
+  namespace: flux-system
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: raw
+      version: v0.3.2
+      sourceRef:
+        kind: HelmRepository
+        name: dysnix-charts
+        namespace: flux-system
+      interval: 30m
+  targetNamespace: cert-manager
+  install:
+    createNamespace: true
+    remediation:
+      retries: 10
+  upgrade:
+    remediation:
+      retries: 10
+  dependsOn:
+    - name: clusterissuer-letsencrypt-prod
+      namespace: flux-system
+  values:
+    resources:
+      - apiVersion: cert-manager.io/v1
+        kind: Certificate
+        metadata:
+          name: wildcard-private-domain
+          namespace: cert-manager
+        spec:
+          secretName: "${SECRET_PRIVATE_DOMAIN_CERT}"
+          secretTemplate:
+            annotations:
+              reflector.v1.k8s.emberstack.com/reflection-allowed: "true"
+              reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces: ""
+              reflector.v1.k8s.emberstack.com/reflection-auto-enabled: "true"
+          issuerRef:
+            name: letsencrypt-prod
+            kind: ClusterIssuer
+          privateKey:
+            rotationPolicy: Always
+          dnsNames:
+            - "*.${SECRET_PRIVATE_DOMAIN}"
+            - "${SECRET_PRIVATE_DOMAIN}"
