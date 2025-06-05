@@ -4,6 +4,8 @@ resources:
   - jetstack.yaml
   - traefik.yaml
   - clusterissuer.yaml
+  - cilium.yaml
   
+
   
   
